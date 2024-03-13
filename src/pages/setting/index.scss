@@ -1,0 +1,11 @@
+
+.setting-wrap {
+  height: 100vh;
+  overflow: auto;
+  background-color: #f5f5f5;
+  padding: 35rpx 0;
+  .cell-group {
+    margin-bottom: 20rpx;
+    border-radius: 31rpx;
+  }
+}
