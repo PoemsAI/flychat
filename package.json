@@ -20,6 +20,7 @@
     "build:jd": "taro build --type jd",
     "build:quickapp": "taro build --type quickapp",
     "build:harmony-hybrid": "taro build --type harmony-hybrid",
+    "dev": "npm run dev:weapp",
     "dev:weapp": "npm run build:weapp -- --watch",
     "dev:swan": "npm run build:swan -- --watch",
     "dev:alipay": "npm run build:alipay -- --watch",
@@ -56,8 +57,11 @@
     "@tarojs/runtime": "3.6.24",
     "@tarojs/shared": "3.6.24",
     "@tarojs/taro": "3.6.24",
+    "@yuntijs/arcadia-bff-sdk": "1.2.0-beta.1",
+    "headers-polyfill": "^4.0.3",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "swr": "^2.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",
