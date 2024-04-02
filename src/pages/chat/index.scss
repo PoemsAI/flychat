@@ -1,0 +1,97 @@
+
+.chat_wrap {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+  .chat_list {
+    flex: 1;
+    padding: 20rpx 0;
+    overflow-y: scroll;
+    .msg_container {
+      display: flex;
+      min-height: 69rpx;
+      font-size: 27rpx;
+      margin: 15rpx 30rpx 30rpx;
+      .msg_item {
+        padding: 15rpx 25rpx;
+        border-radius: 15rpx;
+        background: #E2E2E2;
+        color: #000;
+        word-break: break-all;
+        overflow-y: auto;
+        .msg-info,.msg-loading {
+          margin: 10rpx 0;
+        }
+      }
+      .msg-block {
+        min-width: 90rpx;
+      }
+      .msg_avatar {
+        background-color: #a060ee;
+        height: 69rpx;
+        width: 69px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+    .msg_left {
+      .msg_avatar {
+        margin-right: 20rpx;
+      }
+    }
+    .dis-flex {
+      display: flex;
+      flex: 1;
+    }
+    .msg_right {
+      .msg_item {
+        margin-left: auto;
+        background: #8F1AFF;
+        color: #fff;
+      }
+      .msg_avatar {
+        margin-left: 20rpx;
+      }
+    }
+    .writing_wrap {
+      .msg_item .msg-info:last-child::after{
+        content: '|';
+        animation: blink 1s infinite
+      }
+      @keyframes blink{
+        from{
+          opacity: 0;
+        }
+        to{
+          opacity: 1;
+        }
+      }
+    }
+  }
+  .chat_toolbar {
+    height: 75rpx;
+    padding: 20rpx 0;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 0 12rpx 2rpx rgba(0, 0, 0, 0.05);
+    .chat_input {
+      height: 100%;
+      flex: 1;
+      box-shadow: 0 0 12rpx 2rpx rgba(0,0,0,0.05);
+      border-radius: 38rpx;
+      padding: 0 30rpx;
+      margin-left: 30rpx;
+    }
+    .chat_send {
+      display: flex;
+      width: 100rpx;
+      height: 100%;
+      padding: 0 20rpx;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}

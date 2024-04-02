@@ -1,1 +1,10 @@
-$color-brand: #333 !default;
+ @import "src/assets/styles/theme-white";
+ //@import "src/assets/styles/theme-black";
+
+/* 在线链接服务仅供平台体验和调试使用，平台不承诺服务的稳定性，企业客户需下载字体包自行发布使用并做好备份。 */
+@font-face {
+  font-family: 'iconfont';  /* Project id 4466269 */
+  src: url('//at.alicdn.com/t/c/font_4466269_t9cbk8lfvji.woff2?t=1710730723644') format('woff2'),
+  url('//at.alicdn.com/t/c/font_4466269_t9cbk8lfvji.woff?t=1710730723644') format('woff'),
+  url('//at.alicdn.com/t/c/font_4466269_t9cbk8lfvji.ttf?t=1710730723644') format('truetype');
+}

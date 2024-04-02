@@ -57,11 +57,15 @@
     "@tarojs/runtime": "3.6.24",
     "@tarojs/shared": "3.6.24",
     "@tarojs/taro": "3.6.24",
-    "@yuntijs/arcadia-bff-sdk": "1.2.0-beta.1",
+    "@yuntijs/arcadia-bff-sdk": "^1.2.9",
     "headers-polyfill": "^4.0.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "swr": "^2.2.4"
+    "swr": "^2.2.4",
+    "react-redux": "^9.1.0",
+    "redux": "^5.0.1",
+    "redux-thunk": "^3.1.0",
+    "text-encoding": "^0.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",
@@ -88,6 +92,7 @@
     "postcss": "^8.4.18",
     "react-refresh": "^0.11.0",
     "stylelint": "^14.4.0",
+    "taro-iconfont-cli": "^3.3.0",
     "ts-node": "^10.9.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "typescript": "^5.1.0",

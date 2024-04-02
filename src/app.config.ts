@@ -1,11 +1,22 @@
+import { useGlobalIconFont as globalIconFont } from './components/iconfont/helper';
+
 export default defineAppConfig({
+  usingComponents: globalIconFont(),
+  appId: 'wx7c95a9504d4dc7c5',
   pages: [
     'pages/message/index',
+    'pages/robotDetail/index',
+    'pages/publisherDetail/index',
+    'pages/chat/index',
     'pages/intelligentRobot/index',
     'pages/my/index',
     'pages/createRobot/index',
     'pages/setting/index',
     'pages/editUserInfo/index',
+    'pages/about/index',
+    'pages/feedback/index',
+    'pages/report/index',
+    'pages/updateToken/index',
   ],
   window: {
     backgroundTextStyle: 'light',

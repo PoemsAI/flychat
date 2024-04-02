@@ -1,18 +1,22 @@
+@import "../../app";
+
 .intelligentRobot {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--background-color);
   .tag-wrap {
     overflow: auto;
     margin: 0 20px;
     padding: 5px 0 10px;
     white-space: nowrap;
+    min-height: 62rpx;
     .van-tag {
       height: 32px;
       padding: 12px 15px;
       margin-right: 20px;
-      color: #333;
-      background-color: #fff;
+      color: var(--font-color);
+      background-color: var(--background-color);
       border: 1px solid #E7E6F2;
       border-radius: 8px;
     }
@@ -40,26 +44,26 @@
         .list_info {
           display: flex;
           .list-article-hot-info {
+            display: flex;
+            align-items: center;
+            margin-right: 20rpx;
             font-size: 24px;
-            color: #959595;
-            margin-right: 50px;
-            .icon {
-              margin-right: 5px;
-            }
+            color: var(--desc-color);
           }
           .list-article-info {
             font-size: 24px;
-            color: #959595;
+            color: var(--desc-color);
           }
         }
         .list-title {
           font-size: 30px;
-          color: #000;
+          color: var(--font-color);
         }
         .list-desc {
           font-size: 24px;
+          line-height: 32rpx;
           margin-right: 0;
-          color: rgba(0,0,0,0.65);
+          color: var(--desc-color);
           overflow: hidden;
           text-overflow: ellipsis;
           display: -webkit-box;
@@ -68,7 +72,7 @@
         }
       }
       .right_add {
-        color: #901aff;
+        color: var(--theme-color);
         vertical-align: top;
       }
     }

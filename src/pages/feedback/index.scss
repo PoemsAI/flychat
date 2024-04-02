@@ -1,0 +1,17 @@
+
+page {
+  background-color: var(--background-gray-color);
+}
+.feedback_wrap {
+  min-height: 80vh;
+  margin: 38rpx;
+  background-color: var(--background-gray-color);
+  border-radius: 31rpx;
+  overflow: auto;
+  .vant-form-formItem-controll {
+    margin-left: 15rpx;
+  }
+  .vant-form-formItem-wrapper {
+    background: var(--background-color);
+  }
+}

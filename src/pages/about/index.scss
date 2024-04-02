@@ -1,0 +1,26 @@
+
+page {
+  background-color: var(--background-gray-color);
+}
+.about_wrap {
+  min-height: 80vh;
+  margin: 38rpx;
+  padding: 38rpx;
+  background: var(--background-color);
+  border-radius: 31rpx;
+  .title {
+    font-size: 35rpx;
+    font-weight: bold;
+    color: var(--font-color);
+    margin-bottom: 20rpx;
+  }
+  .title_h3 {
+    font-size: 27rpx;
+    color: var(--font-color);
+    margin-bottom: 20rpx;
+  }
+  .content-p {
+    font-size: 27rpx;
+    color: var(--desc-color);
+  }
+}
