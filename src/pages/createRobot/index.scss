@@ -2,33 +2,51 @@
 .create_robot {
   height: 100vh;
   overflow: auto;
-  background-color: #f5f5f5;
-  padding: 30rpx 38rpx;
+  background-color: var(--background-gray-color);
+  padding: 30rpx 0;
+
+  .cell-group {
+    margin-bottom: 20rpx;
+    border-radius: 31rpx;
+
+    .title-class {
+      margin-left: 20rpx;
+    }
+  }
+
+  .create_form {
+    padding: 0 38rpx;
+  }
 
   .upload-wrap {
     height: 300rpx;
     margin-bottom: 30rpx;
-    background-color: #f5f5f5;
+    background-color: var(--background-color);
     display: flex;
     align-items: center;
     justify-content: center;
+
     .van-uploader {
       border-radius: 50%;
       overflow: hidden;
+
       .van-uploader__upload {
         background-color: rgba(155, 113, 238, 0.15);
         margin: 0;
         width: 230rpx !important;
         height: 230rpx !important;
       }
+
       .van-uploader__preview {
         margin: 0;
       }
+
       .van-uploader__preview-image {
         margin: 0;
         width: 230rpx !important;
         height: 230rpx !important;
       }
+
       .van-uploader__upload-icon {
         color: #9B71EE;
         font-size: 46rpx;
@@ -39,15 +57,13 @@
   .vant-form-formItem-wrapper {
     background: none;
   }
-  .vant-form-label {
-    font-size: 31rpx;
-    color: #000;
-  }
+
   .vant-form-formItem {
     padding: 26rpx 30rpx;
     margin: 0 0 23rpx;
     border-radius: 30rpx;
   }
+
   .vant-form-formItem-controll {
     margin-left: 15rpx;
   }
@@ -58,8 +74,32 @@
     padding-right: 30rpx;
   }
 
-.van-button-submit {
-    color: #901aff;
-    margin-bottom: 23rpx;
+  .button-wrap {
+    display: flex;
+    margin-bottom: 40rpx;
+    margin-top: -100rpx;
+    .button-left {
+      flex: 1;
+    }
+    .van-button-submit {
+      position: relative;
+      z-index: 999;
+      color: #901aff;
+      background-color: var(--background-gray-color);
+      margin-right: 20rpx;
+      padding: 0 20rpx;
+      .button-container {
+        display: flex;
+        align-items: center;
+        .submit-text {
+          margin-left: 10rpx;
+        }
+      }
+    }
+  }
+
+  .submit-wrap {
+    padding: 0 38rpx;
+    margin: 50rpx 0;
   }
 }

@@ -6,7 +6,7 @@ import prodConfig from './prod'
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig(async (merge, { command, mode }) => {
   const baseConfig: UserConfigExport = {
-    projectName: 'myApp',
+    projectName: 'flyChat',
     date: '2024-3-11',
     designWidth: 750,
     deviceRatio: {
@@ -18,6 +18,9 @@ export default defineConfig(async (merge, { command, mode }) => {
     sourceRoot: 'src',
     outputRoot: 'dist',
     plugins: [],
+    alias: {
+      '@': 'src',
+    },
     defineConstants: {
     },
     copy: {
@@ -37,6 +40,9 @@ export default defineConfig(async (merge, { command, mode }) => {
       enable: false // Webpack 持久化缓存配置，建议开启。默认配置请参考：https://docs.taro.zone/docs/config-detail#cache
     },
     mini: {
+      miniCssExtractPluginOption: {
+        ignoreOrder: true // 忽略组件内的css排序问题
+      },
       postcss: {
         pxtransform: {
           enable: true,
@@ -93,7 +99,7 @@ export default defineConfig(async (merge, { command, mode }) => {
       }
     },
     rn: {
-      appName: 'taroDemo',
+      appName: 'flyChat',
       postcss: {
         cssModules: {
           enable: false, // 默认为 false，如需使用 css modules 功能，则设为 true

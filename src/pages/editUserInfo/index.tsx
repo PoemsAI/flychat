@@ -1,7 +1,10 @@
 import React from 'react'
 import { View, Input } from '@tarojs/components'
 import { Form, FormItem, ActionSheet, Icon, Uploader, Popup, DatetimePicker } from '@antmjs/vantui'
+import { useSelector } from 'react-redux';
 import './index.scss'
+import default_chat from '../../assets/images/default_chat.png'
+
 const { memo, useCallback, useState } = React;
 
 const EditUserInfo = () => {
@@ -11,11 +14,16 @@ const EditUserInfo = () => {
     minDate: new Date(1950, 0, 1).getTime(),
     currentDate: new Date(2024, 0, 1).getTime(),
   })
-  const [fileList, setFileList] = useState([])
+  const [fileList, setFileList] = useState([{ url: default_chat }])
   const [actions] = useState([
     { name: '男' },
     { name: '女' }
   ])
+
+  const { name }: any = useSelector((state: any) => {
+    console.log(state);
+    return state.config.userInfo;
+  });
 
   const formIt = Form.useForm()
 
@@ -66,10 +74,10 @@ const EditUserInfo = () => {
   return (
     <View className='edit-user-info'>
 
-      <View className="upload-wrap">
+      <View className='upload-wrap'>
         <Uploader
-          accept="image"
-          uploadIcon="plus"
+          accept='image'
+          uploadIcon='plus'
           deletable
           maxCount={1}
           fileList={fileList}
@@ -79,60 +87,60 @@ const EditUserInfo = () => {
       </View>
 
       <Form
-        initialValues={{userName: '智慧女孩不秃头',}}
+        initialValues={{userName: name,}}
         form={formIt}
         onFinish={(errs, res) => console.info(errs, res)}
       >
         <FormItem
-          label="昵称"
-          name="userName"
-          labelClassName="labelName"
-          className="formItem"
-          trigger="onInput"
-          validateTrigger="onBlur"
+          label='昵称'
+          name='userName'
+          labelClassName='labelName'
+          className='formItem'
+          trigger='onInput'
+          validateTrigger='onBlur'
           valueFormat={(e) => e.detail.value}
         >
-          <Input placeholder="请输入用户名" style="text-align: right;width: 100%;" />
+          <Input placeholder='请输入用户名' style='text-align: right;width: 100%;' />
         </FormItem>
 
         <FormItem
-          label="性别"
-          name="sex"
+          label='性别'
+          name='sex'
           valueFormat={(e) => e.detail.value}
-          valueKey="value"
-          trigger="onConfirm"
+          valueKey='value'
+          trigger='onConfirm'
           onClick={() => setShow(true)}
-          renderRight={<Icon name="arrow" />}
+          renderRight={<Icon name='arrow' />}
         >
-          <View className="form-item-info">{
+          <View className='form-item-info'>{
               formIt.getFieldValue('sex') ||
               actions[0].name
             }</View>
         </FormItem>
 
         <FormItem
-          label="生日"
-          name="birthday"
+          label='生日'
+          name='birthday'
           valueFormat={(e) => e.detail.value}
-          valueKey="value"
-          trigger="onConfirm"
+          valueKey='value'
+          trigger='onConfirm'
           onClick={() => setPopupShow(true)}
-          renderRight={<Icon name="arrow" />}
+          renderRight={<Icon name='arrow' />}
         >
-          <View className="form-item-info">{
+          <View className='form-item-info'>{
             formIt.getFieldValue('birthday') || formatDate(state.currentDate)
           }</View>
         </FormItem>
 
         <FormItem
-          label="城市"
-          name="city"
+          label='城市'
+          name='city'
           valueFormat={(e) => e.detail.value}
-          valueKey="value"
-          trigger="onConfirm"
-          renderRight={<Icon name="arrow" />}
+          valueKey='value'
+          trigger='onConfirm'
+          renderRight={<Icon name='arrow' />}
         >
-          <View className="form-item-info">{
+          <View className='form-item-info'>{
             formIt.getFieldValue('city') || '北京'
           }</View>
         </FormItem>
@@ -150,9 +158,9 @@ const EditUserInfo = () => {
         }}
       />
 
-      <Popup show={popupShow} position="bottom" onClose={() => setPopupShow(false)}>
+      <Popup show={popupShow} position='bottom' onClose={() => setPopupShow(false)}>
         <DatetimePicker
-          type="date"
+          type='date'
           value={state.currentDate}
           minDate={state.minDate}
           onCancel={() => setPopupShow(false)}

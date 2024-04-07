@@ -1,6 +1,6 @@
 {
   "miniprogramRoot": "./",
-  "projectname": "myApp",
+  "projectname": "flyChat",
   "appid": "testAppId",
   "setting": {
     "es6": false,

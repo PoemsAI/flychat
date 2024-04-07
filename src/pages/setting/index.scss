@@ -2,10 +2,13 @@
 .setting-wrap {
   height: 100vh;
   overflow: auto;
-  background-color: #f5f5f5;
+  background-color: var(--background-gray-color);
   padding: 35rpx 0;
   .cell-group {
     margin-bottom: 20rpx;
     border-radius: 31rpx;
+    .title-class {
+      margin-left: 20rpx;
+    }
   }
 }

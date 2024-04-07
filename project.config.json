@@ -1,6 +1,6 @@
 {
   "miniprogramRoot": "./dist",
-  "projectname": "myApp",
+  "projectname": "flyChat",
   "description": "",
   "appid": "touristappid",
   "setting": {

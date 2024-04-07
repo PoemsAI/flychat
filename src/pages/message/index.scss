@@ -1,7 +1,8 @@
-
+@import "../../app";
 .message_list {
   .swipe-cell-btn {
-    height: 154rpx;
+    display: flex;
+    height: 100%;
     text-align: center;
   }
   .list_img {
@@ -9,12 +10,21 @@
     height: 108rpx;
     margin-right: 30rpx;
   }
+  .van-row-wrapper {
+    height: 100%;
+  }
+  .h100 {
+    height: 100%;
+  }
+  .van-cell__title {
+    overflow: hidden;
+  }
   .list_title {
     font-size: 30rpx;
-    color: #000;
+    color: var(--font-color);
   }
   .list_desc {
     font-size: 24rpx;
-    color: rgba(0,0,0,0.65);
+    color: var(--desc-color);
   }
 }
