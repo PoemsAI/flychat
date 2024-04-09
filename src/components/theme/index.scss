@@ -1,0 +1,65 @@
+
+.theme_light {
+  --font-color: #333;
+  --theme-color: #8F1AFF;
+  //--desc-color: #959595;
+  --desc-color: #666;
+  --background-color: #fff;
+  --background-gray-color: #F5F5F5;
+  --border-gray-color: #F5F5F5;
+  --btn-background-color: #ededed;
+
+  // 组件颜色
+  --primary-color: #8F1AFF;
+  --infinite-scroll-primary-color: #8F1AFF;
+  --form-label-color: #333;
+  --cell-background-color: #fff;
+  --search-background-color: #f7f8fa;
+  --share-sheet-cancel-button-background: #f7f8fa;
+}
+
+.theme_dark {
+  --font-color: #fff;
+  --theme-color: #8F1AFF;
+  --desc-color: #fff;
+  --background-color: #222;
+  --background-gray-color: #333;
+  --border-gray-color: #333;
+  --btn-background-color: #222;
+
+  // 组件颜色
+  --text-color: #fff;
+  --tab-text-color: #fff;
+  --cell-text-color: #fff;
+  --form-label-color: #fff;
+  --form-controll-color: #fff;
+  --field-input-text-color: #fff;
+  --button-default-color: #fff;
+  --primary-color: #8F1AFF;
+  --share-sheet-title-color: #fff;
+  --cell-background-color: #222;
+  --search-background-color: #333;
+  --tabs-nav-background-color: #333;
+  --form-background-color: #222;
+  --popup-background-color: #333;
+  --action-sheet-item-background: #333;
+  --share-sheet-cancel-button-background: #333;
+}
+
+page {
+  height: 100%;
+}
+
+.theme_light, .theme_dark {
+  height: 100%;
+}
+
+.theme_container {
+  height: 100%;
+  overflow: auto;
+  background-color: var(--background-gray-color);
+}
+
+.van-action-sheet__cancel, .van-action-sheet__item, .van-share-sheet__cancel {
+  color: var(--text-color);
+}
