@@ -1,0 +1,38 @@
+{
+  "light": {
+    "navBgColor": "#f6f6f6",
+    "navTxtStyle": "black",
+    "bgColor": "#ffffff",
+    "bgTxtStyle": "light",
+    "bgColorTop": "#eeeeee",
+    "bgColorBottom": "#efefef",
+    "tabFontColor": "#000000",
+    "tabSelectedColor": "#901aff",
+    "tabBgColor": "#ffffff",
+    "tabBorderStyle": "black",
+    "iconPath1": "images/message.png",
+    "selectedIconPath1": "images/message_sel.png",
+    "iconPath2": "images/intelligent_robot.png",
+    "selectedIconPath2": "images/intelligent_robot_sel.png",
+    "iconPath3": "images/my.png",
+    "selectedIconPath3": "images/my_sel.png"
+  },
+  "dark": {
+    "navBgColor": "#191919",
+    "navTxtStyle": "white",
+    "bgColor": "#1f1f1f",
+    "bgTxtStyle": "dark",
+    "bgColorTop": "#191919",
+    "bgColorBottom": "#1f1f1f",
+    "tabFontColor": "#ffffff",
+    "tabSelectedColor": "#901aff",
+    "tabBgColor": "#191919",
+    "tabBorderStyle": "white",
+    "iconPath1": "images/message_dark.png",
+    "selectedIconPath1": "images/message_sel.png",
+    "iconPath2": "images/intelligent_robot_dark.png",
+    "selectedIconPath2": "images/intelligent_robot_sel.png",
+    "iconPath3": "images/my_dark.png",
+    "selectedIconPath3": "images/my_sel.png"
+  }
+}
