@@ -2,7 +2,6 @@
 .theme_light {
   --font-color: #333;
   --theme-color: #8F1AFF;
-  //--desc-color: #959595;
   --desc-color: #666;
   --background-color: #fff;
   --background-gray-color: #F5F5F5;
@@ -46,11 +45,7 @@
   --share-sheet-cancel-button-background: #333;
 }
 
-page {
-  height: 100%;
-}
-
-.theme_light, .theme_dark {
+page, .theme_light, .theme_dark {
   height: 100%;
 }
 
@@ -60,6 +55,8 @@ page {
   background-color: var(--background-gray-color);
 }
 
-.van-action-sheet__cancel, .van-action-sheet__item, .van-share-sheet__cancel {
+.van-action-sheet__cancel,
+.van-action-sheet__item,
+.van-share-sheet__cancel {
   color: var(--text-color);
 }

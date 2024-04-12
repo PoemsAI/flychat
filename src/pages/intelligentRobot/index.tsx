@@ -7,85 +7,86 @@ import {
   Icon,
   Tag,
   Cell,
+  Loading,
+  Skeleton,
+  Empty,
   PullToRefresh,
-  InfiniteScroll,
-  InfiniteScrollInstance,
-  IVirtualListInstance,
-  InfiniteScrollProps,
   IPullToRefreshProps,
 } from '@antmjs/vantui'
+import {useSelector} from 'react-redux';
 import { sdk as bff } from '../../utils/index';
-import { toQuerystring } from '../../common/utils';
+import {getAuthData, toQuerystring} from '../../common/utils';
 import './index.scss'
+import ThemeContainer from '../../components/theme/index'
 import IconFont from '../../components/iconfont';
+import default_chat from '../../images/default_chat.png'
 
 
-const { useState, useEffect, useRef, memo } = React;
+const { useState, useEffect, memo } = React;
 
 const IntelligentRobot = () => {
-  const [classify] = useState(['推荐', '游戏动漫', '通用对话', '工作学习', '内容创作', 'AI绘画','影音生成','角色扮演','生活趣味','其他']);
   const [keyWord, setKeyWord] = useState('');
-  const [tagIndex, setTagIndex] = useState(0);
-
+  const [loading, setLoading] = useState(false);
+  const [tagId, setTagId] = useState('0');
+  const [categoryList, setCategoryList] = useState<any>([{ name: '推荐' ,id: '0'}])
   const [listGpts, setListGpts] = useState<any>([]);
 
-  const InfiniteScrollInstance = useRef<InfiniteScrollInstance>()
-  const VirtualListInstance = useRef<IVirtualListInstance>()
-
-  const isFirst = useRef(true)
-  const isNextPage = useRef(true)
+  const { apiUrl, T }: any = useSelector((state: any) => {
+    const config = state.config
+    return {
+      apiUrl: config.apiUrl,
+      T: config.locales?.data,
+    };
+  });
 
   useEffect(() => {
-    if(isFirst.current) {
-      isFirst.current = false;
-      return;
-    }
+    getListGPTCategory();
+  }, []);
+
+  useEffect(() => {
+    setListGpts([]);
     onRefresh();
-  }, [tagIndex])
+  }, [tagId])
+
+  const getListGPTCategory = async () => {
+    const category: any = await bff.listGPTCategory().catch(error => {
+      console.warn('getListGPTCategory failed', error);
+    });
+    const data = category?.GPT?.listGPTCategory || [];
+    setCategoryList(categoryList.concat(data));
+  }
+
+  const sleep = time => new Promise(resolve => setTimeout(resolve, time))
 
   const getListGPTs = async () => {
-    const agentData = await bff.listGPTs({
+    const authData = getAuthData();
+    const category = tagId === '0' ? 'app-is-recommended=true' : `app-category=${tagId}`
+    setLoading(true)
+    const agentData: any = await bff.listApplications({
       input: {
-        category: classify[tagIndex],
+        labelSelector: `arcadia.kubeagi.k8s.com.cn/${category}`,
         page: 1,
-        pageSize: 99,
+        pageSize: 999,
+        namespace: authData?.project,
+        keyword: keyWord,
       },
-    }).catch(error => {
+    }).catch(async error => {
+      await sleep(500)
+      setLoading(false)
       console.warn('getAgent failed', error);
     });
-    const { nodes, hasNextPage} = agentData?.GPT?.listGPT || { nodes: [], hasNextPage: false }
+    await sleep(500)
+    setLoading(false)
+    const { nodes, hasNextPage} = agentData?.Application?.listApplicationMetadata || { nodes: [], hasNextPage: false }
     // setListGpts(data);
     return { nodes, hasNextPage };
   }
 
-  const loadMore: InfiniteScrollProps['loadMore'] = async () => {
-    return new Promise(async (resolve) => {
-      if(!isNextPage.current) {
-        resolve('complete')
-        return;
-      }
-      const { nodes, hasNextPage } = await getListGPTs()
-      if(Array.isArray(nodes)) {
-        const newData = listGpts.concat(nodes)
-        setListGpts(newData)
-        isNextPage.current = hasNextPage
-        resolve('complete')
-      } else {
-        resolve('error')
-      }
-      console.log('loadMore')
-    })
-  }
-
   const onRefresh: IPullToRefreshProps['onRefresh'] = () => {
     return new Promise(async (resolve) => {
-      isNextPage.current = true;
-      InfiniteScrollInstance.current?.reset()
-      const { nodes, hasNextPage } = await getListGPTs()
-      await VirtualListInstance.current?.reset()
+      const { nodes } = await getListGPTs()
       setListGpts(nodes)
       console.log('onRefresh')
-      isNextPage.current = hasNextPage;
       resolve(undefined)
     })
   }
@@ -96,88 +97,98 @@ const IntelligentRobot = () => {
   }
 
   const onToRobotChat = (data) => {
-    const [app_namespace, app_name] = data?.name?.split('/') || [];
+    // const [app_namespace, app_name] = data?.name?.split('/') || [];
+    const { name, displayName, namespace } = data || {};
     const params = {
-      app_name,
-      app_namespace
+      displayName,
+      app_name: name,
+      app_namespace: namespace,
     }
     Taro.navigateTo({
       url: `/pages/chat/index?${toQuerystring(params)}`
     });
   }
 
-  const filterListGpts = listGpts?.filter(item => item?.displayName?.includes(keyWord))
+  // const filterListGpts = listGpts?.filter(item => item?.displayName?.includes(keyWord))
 
   return (
-    <View className='intelligentRobot'>
-      <View>
-        <Search value={keyWord} background='transparent' onChange={onSearchChange} placeholder='搜索' />
-      </View>
+    <ThemeContainer isTabBar>
+      <View className='intelligentRobot'>
+        <View>
+          <Search value={keyWord} background='transparent' onChange={onSearchChange} onSearch={onRefresh} placeholder={T['search']} />
+        </View>
 
-      <View className='tag-wrap'>
-        {
-          classify.map((v, i) => (
-            <Tag
-              key={v}
-              className={tagIndex === i ? 'tag-active' : ''}
-              onClick={() => setTagIndex(i)}
-            >
-              { !i && <Icon name='good-job-o' size={30} className='good-icon' /> }
-              {v}
-            </Tag>
-          ))
-        }
-      </View>
+        <View className='tag-wrap'>
+          {
+            categoryList.map((v) => (
+              <Tag
+                key={v.id}
+                className={tagId === v.id ? 'tag-active' : ''}
+                onClick={() => setTagId(v.id)}
+              >
+                { !v.id && <Icon name='good-job-o' size={30} className='good-icon' /> }
+                {v.name}
+              </Tag>
+            ))
+          }
+        </View>
 
-      <View className='robot_list'>
-        <PullToRefresh onRefresh={onRefresh}>
-          <View>
-            {
-              filterListGpts?.map((item) => (
-                <Cell
-                  clickable
-                  className='robot_wrap'
-                  onClick={() => onToRobotChat(item)}
-                  renderIcon={
-                    <Image
-                      className='list_img'
-                      round
-                      width={110}
-                      height={110}
-                      src={item?.icon || ''}
-                    />
-                  }
-                  renderTitle={
-                    <View className='list_content'>
-                      <View className='list-title'>
-                        { item.displayName || '' }
-                      </View>
-                      <View className='list-desc'>
-                        { item.description || '' }
-                      </View>
-                      <View className='list_info'>
-                        <View className='list-article-hot-info'>
-                          <IconFont name='ef-redian-gongju' color='#959595' size={35} />
-                          {item?.hot || 0}万
+        <View className='robot_list'>
+          <PullToRefresh onRefresh={onRefresh} touchMinTime={0} key={tagId}>
+            <View>
+              {
+                listGpts?.length ? listGpts?.map((item) => (
+                  <Cell
+                    key={item.id}
+                    clickable
+                    className='robot_wrap'
+                    onClick={() => onToRobotChat(item)}
+                    renderIcon={
+                      <Image
+                        className='list_img'
+                        round
+                        lazyLoad
+                        width={110}
+                        height={110}
+                        src={`${apiUrl}${item?.icon}` || default_chat}
+                      />
+                    }
+                    renderTitle={
+                      <View className='list_content'>
+                        <View className='list-title'>
+                          { item.displayName || '' }
                         </View>
-                        <View className='list-article-info'>
-                          @{item?.creator || ''}
+                        <View className='list-desc'>
+                          { item.description || '' }
+                        </View>
+                        <View className='list_info'>
+                          <View className='list-article-hot-info'>
+                            <IconFont name='ef-redian-gongju' color='#959595' size={35} />
+                            {item?.hot || 0}w
+                          </View>
+                          <View className='list-article-info'>
+                            @{item?.creator || ''}
+                          </View>
                         </View>
                       </View>
-                    </View>
-                  }
-                  renderRightIcon={
-                    <Icon name='add-o' size={30} className='right_add' />
-                  }
-                >
-                </Cell>
-              ))
-            }
-            <InfiniteScroll loadMore={loadMore} ref={InfiniteScrollInstance} />
-          </View>
-        </PullToRefresh>
+                    }
+                    renderRightIcon={
+                      <Icon name='add-o' size={30} className='right_add' />
+                    }
+                  >
+                  </Cell>
+                )) : (loading ?
+                  <View className='loading'>
+                    <Loading size={24}>加载中...</Loading>
+                    <Skeleton title avatar row='2' loading={loading} />
+                  </View> :
+                  <Empty description='暂无数据' />)
+              }
+            </View>
+          </PullToRefresh>
+        </View>
       </View>
-    </View>
+    </ThemeContainer>
   )
 }
 

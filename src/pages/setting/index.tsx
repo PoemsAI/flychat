@@ -1,11 +1,12 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import Taro from '@tarojs/taro';
 import { View } from '@tarojs/components'
 import { useSelector, useDispatch } from 'react-redux'
 import { ActionSheet, CellGroup, Cell, ShareSheet, Toast } from '@antmjs/vantui'
 import './index.scss'
+import ThemeContainer  from '../../components/theme/index';
 import IconFont from "../../components/iconfont";
-import { updateTheme, updateApiUrl } from "../../actions/index";
+import {updateTheme, updateApiUrl, updateLocale} from "../../actions/index";
 
 const { memo, useState } = React;
 
@@ -33,36 +34,65 @@ const options = [
   },
 ]
 
-// const themeConfig = {
-//   '浅色模式': 'light',
-//   '深色模式': 'dark',
-//   '跟随系统': '',
-// }
+const themeConfig = {
+  'light': '浅色模式',
+  'dark': '深色模式',
+  'system': '跟随系统',
+  '浅色模式': 'light',
+  '深色模式': 'dark',
+  '跟随系统': 'system',
+}
+
+const langConfig = {
+  'zh_CN': '中文',
+  'zh_EN': 'English',
+  '中文': 'zh_CN',
+  'English': 'zh_EN',
+}
 
 const Setting = () => {
   const [show, setShow] = useState(false)
+  const [langShow, setLangShow] = useState(false)
   const [shareShow, setShareShow] = useState(false)
   const [hostShow, setHostShow] = useState(false)
-  const [theme, setTheme] = useState('');
-  const [actions] = useState([
-    { name: '浅色模式' },
+  const fontColor = '#8F1AFF'
+  const dispatch = useDispatch();
+
+  const { phone, theme, language, T }: any = useSelector((state: any) => {
+    const config = state.config;
+    return {
+      phone: config?.userInfo?.phone,
+      theme: config.theme,
+      language: config.locales?.language,
+      T: config.locales.data,
+    };
+  });
+
+  const [langActions, setLangActions] = useState([
+    { name: '中文', color: fontColor },
+    { name: 'English' }
+  ])
+
+  const [actions, setActions] = useState([
+    { name: '浅色模式', color: fontColor },
     { name: '深色模式' },
     { name: '跟随系统' }
   ])
 
-  const [hostActions] = useState([
+  const [hostActions, setHostActions] = useState([
     { name: 'https://gpts.172.22.96.167.nip.io' },
     { name: 'https://gpts.172.40.20.125.nip.io' },
     { name: 'https://gpts.172.22.96.136.nip.io' },
-    { name: 'https://portal.kubeagi.com' },
+    { name: 'https://portal.kubeagi.com', color: fontColor },
   ])
-  const fontColor = '#8F1AFF'
-  const dispatch = useDispatch();
 
-  const { phone }: any = useSelector((state: any) => {
-    console.log(state);
-    return state.config.userInfo;
-  });
+  useEffect(() => {
+    handleActionColor(themeConfig[theme], actions, setActions)
+  }, [theme]);
+
+  useEffect(() => {
+    handleActionColor(langConfig[language], langActions, setLangActions)
+  }, [language]);
 
   const onToAbout = () => {
     Taro.navigateTo({
@@ -72,7 +102,7 @@ const Setting = () => {
 
   const onToFeedback = () => {
     Taro.navigateTo({
-      url: '/pages/feedback/index'
+      url: '/pages/complaint/index'
     });
   }
 
@@ -82,16 +112,25 @@ const Setting = () => {
     });
   }
 
+  const handleActionColor = (v, action, setAction) => {
+    setAction(action.map((item) => ({
+      ...item,
+      color: item.name === v ? fontColor : ''
+    })));
+  }
+
   return (
-    <View className='setting-wrap'>
+    <ThemeContainer>
+      <View className='setting-wrap'>
 
       <CellGroup inset className='cell-group'>
         <Cell
           center
+          clickable
           renderIcon={
             <IconFont name='shouji' color={fontColor} size={35} />
           }
-          title='手机号'
+          title={T['phone']}
           value={phone}
         />
         <Cell
@@ -99,8 +138,8 @@ const Setting = () => {
           renderIcon={
             <IconFont name='weixin' color={fontColor} size={35} />
           }
-          title='微信'
-          value='去绑定'
+          title={T['wechat']}
+          value={T['goToBind']}
           isLink
         />
         <Cell
@@ -108,8 +147,8 @@ const Setting = () => {
           renderIcon={
             <IconFont name='apple' color={fontColor} size={35} />
           }
-          title='Apple ID'
-          value='去绑定'
+          title={T['appleId']}
+          value={T['goToBind']}
           isLink
         />
       </CellGroup>
@@ -121,7 +160,7 @@ const Setting = () => {
             <IconFont name='fenxiang' color={fontColor} size={35} />
           }
           onClick={() => setShareShow(true)}
-          title='分享给好友'
+          title={T['shareWithFriends']}
           isLink
         />
         <Cell
@@ -130,7 +169,7 @@ const Setting = () => {
             <IconFont name='bianji' color={fontColor} size={35} />
           }
           onClick={onToFeedback}
-          title='反馈与投诉，帮助我们改进'
+          title={T['feedbackAndComplaint']}
           isLink
         />
       </CellGroup>
@@ -141,9 +180,38 @@ const Setting = () => {
           renderIcon={
             <IconFont name='brightj2' color={fontColor} size={35} />
           }
-          title='背景设置'
-          value={theme || '浅色模式'}
+          title={T['backgroundSetting']}
+          value={themeConfig[theme || 'light']}
           onClick={()=> setShow(true)}
+          isLink
+        />
+        <Cell
+          center
+          renderIcon={<IconFont name='yuyan1' color={fontColor} size={35} />}
+          title={T['language']}
+          onClick={() => setLangShow(true)}
+          value={langConfig[language || 'zh_CN']}
+          isLink
+        />
+      </CellGroup>
+
+      <CellGroup inset className='cell-group'>
+        <Cell
+          center
+          onClick={onToUpdateToken}
+          renderIcon={
+            <IconFont name='bianji' color={fontColor} size={35} />
+          }
+          title={T['updateToken']}
+          isLink
+        />
+        <Cell
+          center
+          onClick={() => setHostShow(true)}
+          renderIcon={
+            <IconFont name='bianji' color={fontColor} size={35} />
+          }
+          title={T['updateApiUrl']}
           isLink
         />
       </CellGroup>
@@ -154,35 +222,18 @@ const Setting = () => {
           renderIcon={
             <IconFont name='guanyu_o' color={fontColor} size={40} />
           }
-          title='关于我们'
+          title={T['about']}
           onClick={onToAbout}
-          isLink
-        />
-        <Cell
-          center
-          onClick={onToUpdateToken}
-          renderIcon={
-            <IconFont name='bianji' color={fontColor} size={35} />
-          }
-          title='更新Token'
-          isLink
-        />
-        <Cell
-          center
-          onClick={() => setHostShow(true)}
-          renderIcon={
-            <IconFont name='bianji' color={fontColor} size={35} />
-          }
-          title='切换apiUrl'
           isLink
         />
 
         <Cell
           center
+          clickable
           renderIcon={
             <IconFont name='tuichu-' color={fontColor} size={30} style={{ marginLeft: 3 }} />
           }
-          title='退出登录'
+          title={T['logout']}
         />
       </CellGroup>
 
@@ -193,10 +244,12 @@ const Setting = () => {
         actions={hostActions}
         onClose={() => setHostShow(false)}
         onSelect={async (e) => {
-          console.info(e.detail.name);
-          Taro.setStorageSync('api_url', e.detail.name)
+          const v = e.detail.name;
+          console.info(v);
+          Taro.setStorageSync('apiUrl', v)
           setHostShow(false);
-          dispatch(await updateApiUrl(e.detail.name))
+          dispatch(await updateApiUrl(v))
+          handleActionColor(v, hostActions, setHostActions)
           Taro.showToast({
             title: '更新api成功',
             duration: 1000
@@ -209,24 +262,38 @@ const Setting = () => {
         actions={actions}
         onClose={() => setShow(false)}
         onSelect={async (e) => {
-          console.info(e.detail.name);
-          Taro.setStorageSync('api_url', e.detail.name)
-          setTheme(e.detail.name);
+          const v = e.detail.name;
+          console.info(v);
           setShow(false);
-          dispatch(await updateTheme(e.detail.name))
+          dispatch(await updateTheme(themeConfig[e.detail.name]))
+          handleActionColor(v, actions, setActions)
+        }}
+      />
+
+      <ActionSheet
+        show={langShow}
+        actions={langActions}
+        onClose={() => setLangShow(false)}
+        onSelect={async (e) => {
+          const v = e.detail.name;
+          console.info(e.detail.name);
+          dispatch(await updateLocale(langConfig[e.detail.name]))
+          setLangShow(false);
+          handleActionColor(v, langActions, setLangActions);
         }}
       />
 
       <ShareSheet
         show={shareShow}
         closeOnClickOverlay
-        title='分享给好友'
+        title={T['shareWithFriends']}
         options={options}
         onSelect={(e) => Toast.show(e.detail.name)}
         onClose={() => setShareShow(false)}
       />
 
     </View>
+    </ThemeContainer>
   )
 }
 

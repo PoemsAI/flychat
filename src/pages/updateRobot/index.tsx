@@ -1,11 +1,13 @@
 import React from 'react'
 import { View, Input, Textarea } from '@tarojs/components'
 import Taro from '@tarojs/taro';
+import {useSelector} from 'react-redux';
 import {getCurrentInstance} from '@tarojs/runtime';
 import { Form, FormItem, Button, ActionSheet, Uploader, Cell, CellGroup } from '@antmjs/vantui'
 import './index.scss'
 import IconFont from "../../components/iconfont";
-import default_chat from '../../assets/images/default_chat.png'
+import ThemeContainer from '../../components/theme/index'
+import default_chat from '../../images/default_chat.png'
 import {sdk as bff} from '../../utils/index';
 
 
@@ -39,6 +41,14 @@ const UpdateRobot = () => {
     { name: '私密-仅自己可对话',},
   ])
 
+  const { apiUrl, T }: any = useSelector((state: any) => {
+    const config = state.config;
+    return {
+      apiUrl: config.apiUrl,
+      T: config.locales.data,
+    };
+  });
+
   const { app_name, app_namespace }: Record<string, any> = getCurrentInstance().router?.params || {};
 
   const formIt = Form.useForm()
@@ -67,7 +77,7 @@ const UpdateRobot = () => {
     if (category) {
       handleActionColor(category, categoryActions, setCategoryActions)
     }
-    setFileList([{ url: Application.icon, type: 'image' }])
+    setFileList([{ url: `${apiUrl}${Application.icon}`, type: 'image' }])
   }
 
   const afterRead = (e) => {
@@ -86,14 +96,14 @@ const UpdateRobot = () => {
     const id = categoryActions.find(item => item.name === category)?.id;
     if (!name) {
       Taro.showToast({
-        title: '请输入名称',
+        title: `${T['pleaseEnter']}${T['name']}`,
         icon: 'none'
       })
       return
     }
     if (!displayName) {
       Taro.showToast({
-        title: '请输入别名',
+        title: `${T['pleaseEnter']}${T['nickName']}`,
         icon: 'none'
       })
       return
@@ -170,181 +180,183 @@ const UpdateRobot = () => {
   }
 
   return (
-    <View className='create_robot'>
+    <ThemeContainer>
+      <View className='create_robot'>
 
-      <View className='upload-wrap'>
-        <Uploader
-          accept='image'
-          uploadIcon='plus'
-          deletable
-          maxCount={1}
-          fileList={fileList}
-          onAfterRead={afterRead}
-          onDelete={deleteAction}
-        />
-      </View>
+        <View className='upload-wrap'>
+          <Uploader
+            accept='image'
+            uploadIcon='plus'
+            deletable
+            maxCount={1}
+            fileList={fileList}
+            onAfterRead={afterRead}
+            onDelete={deleteAction}
+          />
+        </View>
 
-      <View className='create_form'>
-        <Form
-          form={formIt}
-          onFinish={onFinish}
-        >
-          <FormItem
-            label='名称'
-            name='name'
-            labelClassName='labelName'
-            className='formItem'
-            trigger='onInput'
-            validateTrigger='onBlur'
-            valueFormat={(e) => e.detail.value}
+        <View className='create_form'>
+          <Form
+            form={formIt}
+            onFinish={onFinish}
           >
-            <Input disabled placeholder='请输入名称' style='width: 100%;' />
-          </FormItem>
-
-          <FormItem
-            label='别名'
-            name='displayName'
-            labelClassName='labelName'
-            className='formItem'
-            trigger='onInput'
-            validateTrigger='onBlur'
-            valueFormat={(e) => e.detail.value}
-          >
-            <Input focus placeholder='请输入别名' style='width: 100%;' />
-          </FormItem>
-
-          <FormItem
-            label='分类'
-            name='category'
-            labelClassName='labelName'
-            className='formItem'
-            valueFormat={(e) => e.detail.value}
-          >
-            <Cell
-              renderTitle={null}
-              style='padding:0;'
-              clickable={false}
-              border={false}
-              onClick={() => setCategoryShow(true)}
-              isLink
+            <FormItem
+              label={T['name']}
+              name='name'
+              labelClassName='labelName'
+              className='formItem'
+              trigger='onInput'
+              validateTrigger='onBlur'
+              valueFormat={(e) => e.detail.value}
             >
-              {formIt.getFieldValue('category') || '请选择'}
-            </Cell>
-          </FormItem>
+              <Input disabled placeholder={`${T['pleaseEnter']}${T['name']}`} style='width: 100%;' />
+            </FormItem>
 
-          <FormItem
-            label='角色描述'
-            name='description'
-            layout='vertical'
-            trigger='onInput'
-            validateTrigger='onBlur'
-            valueFormat={(e) => e.detail.value}
+            <FormItem
+              label={T['nickName']}
+              name='displayName'
+              labelClassName='labelName'
+              className='formItem'
+              trigger='onInput'
+              validateTrigger='onBlur'
+              valueFormat={(e) => e.detail.value}
+            >
+              <Input focus placeholder={`${T['pleaseEnter']}${T['nickName']}`} style='width: 100%;' />
+            </FormItem>
+
+            <FormItem
+              label={T['category']}
+              name='category'
+              labelClassName='labelName'
+              className='formItem'
+              valueFormat={(e) => e.detail.value}
+            >
+              <Cell
+                renderTitle={null}
+                style='padding:0;'
+                clickable={false}
+                border={false}
+                onClick={() => setCategoryShow(true)}
+                isLink
+              >
+                {formIt.getFieldValue('category') || T['pleaseSelect']}
+              </Cell>
+            </FormItem>
+
+            <FormItem
+              label={T['roleDescription']}
+              name='description'
+              layout='vertical'
+              trigger='onInput'
+              validateTrigger='onBlur'
+              valueFormat={(e) => e.detail.value}
+            >
+              <Textarea placeholder={`${T['pleaseEnter']}${T['robot']}${T['desc']}`} style='min-height: 80px;' autoHeight />
+            </FormItem>
+
+            <View className='button-wrap'>
+              <View className='button-left' />
+              <Button className='van-button-submit' round size='small'>
+                <View className='button-container'>
+                  <IconFont name='mofabang' color={fontColor} size={35} />
+                  <View className='submit-text'>{T['autoGeneration']}</View>
+                </View>
+              </Button>
+            </View>
+          </Form>
+        </View>
+
+        <CellGroup inset className='cell-group'>
+          <Cell
+            center
+            renderIcon={<IconFont name='yuyan1' color={fontColor} size={35} />}
+            title={T['language']}
+            onClick={() => setShow(true)}
+            value={language}
+            isLink
+          />
+          <Cell
+            center
+            renderIcon={
+              <IconFont name='shengyin' color={fontColor} size={35} />}
+            title={T['audio']}
+            onClick={() => setAudioShow(true)}
+            value={audio}
+            isLink
+          />
+          <Cell
+            center
+            renderIcon={<IconFont name='yuyan' color={fontColor} size={30} />}
+            title={T['openDialogue']}
+            onClick={() => setAuthShow(true)}
+            value={auth}
+            isLink
+          />
+        </CellGroup>
+
+        <View className='submit-wrap'>
+          <Button color={fontColor} block round onClick={() => {
+            formIt.submit();
+          }}
           >
-            <Textarea placeholder='我是智能体描述' style='min-height: 80px;' autoHeight />
-          </FormItem>
+            {T['submit']}
+          </Button>
+        </View>
 
-          <View className='button-wrap'>
-            <View className='button-left' />
-            <Button className='van-button-submit' round size='small'>
-              <View className='button-container'>
-                <IconFont name='mofabang' color={fontColor} size={35} />
-                <View className='submit-text'>自动生成</View>
-              </View>
-            </Button>
-          </View>
-        </Form>
+        <ActionSheet
+          show={categoryShow}
+          actions={categoryActions}
+          onClose={() => setCategoryShow(false)}
+          onSelect={(e) => {
+            const v = e.detail.name;
+            console.info(v);
+            formIt?.setFieldsValue('category', v)
+            setCategoryShow(false);
+            handleActionColor(v, categoryActions, setCategoryActions)
+          }}
+        />
+
+        <ActionSheet
+          show={show}
+          actions={actions}
+          onClose={() => setShow(false)}
+          onSelect={(e) => {
+            const v = e.detail.name;
+            console.info(e.detail.name);
+            setLanguage(e.detail.name);
+            setShow(false);
+            handleActionColor(v, actions, setActions);
+          }}
+        />
+
+        <ActionSheet
+          show={audioShow}
+          actions={audioActions}
+          onClose={() => setAudioShow(false)}
+          onSelect={(e) => {
+            const v = e.detail.name;
+            console.info(v);
+            setAudio(v);
+            setAudioShow(false);
+            handleActionColor(v, audioActions, setAudioActions)
+          }}
+        />
+
+        <ActionSheet
+          show={authShow}
+          actions={authActions}
+          onClose={() => setAuthShow(false)}
+          onSelect={(e) => {
+            const v = e.detail.name;
+            console.info(v);
+            setAuth(v);
+            setAuthShow(false);
+            handleActionColor(v, authActions, setAuthActions)
+          }}
+        />
+
       </View>
-
-      <CellGroup inset className='cell-group'>
-        <Cell
-          center
-          renderIcon={<IconFont name='yuyan1' color={fontColor} size={35} />}
-          title='语言'
-          onClick={() => setShow(true)}
-          value={language}
-          isLink
-        />
-        <Cell
-          center
-          renderIcon={
-            <IconFont name='shengyin' color={fontColor} size={35} />}
-          title='声音'
-          onClick={() => setAudioShow(true)}
-          value={audio}
-          isLink
-        />
-        <Cell
-          center
-          renderIcon={<IconFont name='yuyan' color={fontColor} size={30} />}
-          title='公开-所有人可对话'
-          onClick={() => setAuthShow(true)}
-          value={auth}
-          isLink
-        />
-      </CellGroup>
-
-      <View className='submit-wrap'>
-        <Button color={fontColor} block round onClick={() => {
-          formIt.submit();
-        }}
-        >
-          完成
-        </Button>
-      </View>
-
-      <ActionSheet
-        show={categoryShow}
-        actions={categoryActions}
-        onClose={() => setCategoryShow(false)}
-        onSelect={(e) => {
-          const v = e.detail.name;
-          console.info(v);
-          formIt?.setFieldsValue('category', v)
-          setCategoryShow(false);
-          handleActionColor(v, categoryActions, setCategoryActions)
-        }}
-      />
-
-      <ActionSheet
-        show={show}
-        actions={actions}
-        onClose={() => setShow(false)}
-        onSelect={(e) => {
-          const v = e.detail.name;
-          console.info(e.detail.name);
-          setLanguage(e.detail.name);
-          setShow(false);
-          handleActionColor(v, actions, setActions);
-        }}
-      />
-
-      <ActionSheet
-        show={audioShow}
-        actions={audioActions}
-        onClose={() => setAudioShow(false)}
-        onSelect={(e) => {
-          const v = e.detail.name;
-          console.info(v);
-          setAudio(v);
-          setAudioShow(false);
-          handleActionColor(v, audioActions, setAudioActions)
-        }}
-      />
-
-      <ActionSheet
-        show={authShow}
-        actions={authActions}
-        onClose={() => setAuthShow(false)}
-        onSelect={(e) => {
-          const v = e.detail.name;
-          console.info(v);
-          setAuth(v);
-          setAuthShow(false);
-          handleActionColor(v, authActions, setAuthActions)
-        }}
-      />
-
-    </View>
+    </ThemeContainer>
   )
 }
 

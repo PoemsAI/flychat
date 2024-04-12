@@ -1,15 +1,17 @@
-import { PropsWithChildren } from 'react'
-import { useLaunch } from '@tarojs/taro'
-import {Provider, useDispatch} from 'react-redux'
+import { PropsWithChildren, memo } from 'react'
+import Taro, { useLaunch } from '@tarojs/taro'
+import {Provider } from 'react-redux'
 import store from './store/index'
 import $Api from './common/api';
 import { getAuthData, setAuthData } from './common/utils';
-import { updateUserInfo } from './actions';
+import { updateUserInfo, updateLocale } from './actions';
 import './app.scss'
 
 function App({ children }: PropsWithChildren<any>) {
-  useLaunch(() => {
+  useLaunch(async () => {
     console.log('App launched.')
+    const lang = Taro.getStorageSync('locales') || 'zh_CN'
+    store.dispatch(await updateLocale(lang))
     getUserInfo();
   })
 
@@ -22,6 +24,7 @@ function App({ children }: PropsWithChildren<any>) {
         query: "query getCurrentUser {\n  userCurrent {\n    name\n    email\n    role\n    password\n    description\n    phone\n    creationTimestamp\n  }\n}",
       }
     })
+
     const user: Record<string, any> = res?.data?.data?.userCurrent || {};
     if (user.name) {
       const authData = getAuthData();
@@ -29,15 +32,15 @@ function App({ children }: PropsWithChildren<any>) {
         authData.user = {};
       }
       authData.user = user;
-      const dispatch = useDispatch();
-      dispatch(await updateUserInfo(user))
-      setAuthData(authData);
+      setAuthData(JSON.stringify(authData));
+      store.dispatch(await updateUserInfo(user))
     }
   }
 
   return (<Provider store={store}>{
-    children
-  }</Provider>)
+      children
+    }</Provider>
+ )
 }
 
-export default App
+export default memo(App)

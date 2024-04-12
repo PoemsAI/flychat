@@ -1,18 +1,20 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React from 'react'
 import Taro from "@tarojs/taro";
 import { getCurrentInstance } from '@tarojs/runtime';
 import { View, Input, ScrollView } from '@tarojs/components'
 import {Toast, Loading, Image} from '@antmjs/vantui'
-import { TextDecoder } from "text-encoding/lib/encoding";
+import {useSelector} from 'react-redux';
 import './index.scss'
 import IconFont from '../../components/iconfont';
+import ThemeContainer from '../../components/theme/index'
 import $Api from '../../common/api';
 import { sdk as bff } from '../../utils/index';
 import {getAuthData, toQuerystring} from '../../common/utils';
-import default_chat from '../../assets/images/default_chat.png'
+import { atob } from '../../utils/base64.min.js';
+import default_chat from '../../images/default_chat.png'
 
 
-const { memo } = React;
+const { memo, useEffect, useRef, useState } = React;
 const ToastTip = Toast.createOnlyToast()
 
 const Chat = () => {
@@ -22,7 +24,7 @@ const Chat = () => {
   const [isShowWrite, setIsShowWrite] = useState(false)
   const [writingMsg, setWritingMsg] = useState<string>('');
   const [robotInfo, setRobotInfo] = useState<any>({})
-  const { id, app_name, app_namespace }: Record<string, any> = getCurrentInstance().router?.params || {};
+  const { id, app_name, displayName, app_namespace }: Record<string, any> = getCurrentInstance().router?.params || {};
   const [scrollTop, setScrollTop] = useState(0)
 
   const isReceived = useRef(false)
@@ -33,12 +35,23 @@ const Chat = () => {
   });
   const timer = useRef<any>(null);
 
+  const { apiUrl, T }: any = useSelector((state: any) => {
+    const config = state.config
+    return {
+      apiUrl: config.apiUrl,
+      T: config.locales.data,
+    };
+  });
+
   useEffect(() => {
     Taro.setNavigationBarTitle({
-      title: `对话${app_name || '机器人'}`
+      title: `对话${displayName || app_name || '机器人'}`
     })
     getApplication();
     getMsgList();
+    return () => {
+      clearTimeout(timer.current);
+    }
   }, [])
 
   useEffect(() => {
@@ -48,8 +61,8 @@ const Chat = () => {
   }, [isShowWrite])
 
   useEffect(() => {
-    console.log('writing', writeMsgList.current);
-    if (writeMsgList.current?.length) {
+    if (!writeStatus.current.status && writeMsgList.current?.length) {
+      console.log('writing', writeMsgList.current);
       writing(writingMsg);
     }
   }, [writeMsgList.current])
@@ -80,6 +93,7 @@ const Chat = () => {
 
   const writing = (str) => {
     if (writeStatus.current.index < writeMsgList.current?.length) {
+      writeStatus.current.status = true;
       str += writeMsgList.current[writeStatus.current.index]?.message || '';
       setWritingMsg(str);
       handleScrollBottom();
@@ -112,14 +126,22 @@ const Chat = () => {
   }
 
   const getApplication = async () => {
+    if (!app_name) {
+      return
+    }
     const res = await bff.getApplication({
       name: app_name,
       namespace: app_namespace,
     }).catch(error => {
       console.warn('getApplication failed', error);
     });
-    const Application: any = res?.Application?.getApplication || {};
+    const Application: any = res?.Application?.getApplication?.metadata || {};
     setRobotInfo(Application);
+    if (!displayName) {
+      Taro.setNavigationBarTitle({
+        title: `对话${Application.displayName || app_name || '机器人'}`
+      })
+    }
   }
 
   const getMsgList = async () => {
@@ -185,25 +207,11 @@ const Chat = () => {
     })
     console.log('task', task);
     task?.onChunkReceived((res: any) => {
-      // console.log(res);
       setLoading(false)
-      // 对返回的数据进行操作，这个逻辑仅供参考，有不同的需要自行修改
-      let arrayBuffer = res.data; // 接收持续返回的数据
-      let uint8Array = new Uint8Array(arrayBuffer);
-      let text = Taro.arrayBufferToBase64(uint8Array);
-      const base64ToUtf8 = (base64String) => {
-        // base64转utf8 这个方法可以提出去 我这里方便展示
-        // new TextDecoder() 小程序真机中没有这个方法，得下载一个这个 text-encoding
-        // npm install text-encoding --save-dev
-        // 引入import { TextDecoder } from "text-encoding/lib/encoding";
-        const bytes = Taro.base64ToArrayBuffer(base64String);
-        return new TextDecoder().decode(bytes);
-      }
-      text = base64ToUtf8(text);
-      // console.log(text);
-      // // 持续的转译 最后会变成类似这样的
+      let arrayBuffer = res.data;
+      let text = Taro.arrayBufferToBase64(new Uint8Array(arrayBuffer));
+      text = decodeURIComponent(escape(atob(text)));
       const convertStringToArr = (str) => {
-        // 格式化返回的流式数据 这个方法也可以提出去 我这里方便展示
         const arr = str.trim().split('\n\n');
         const strArr: Record<string, any>[] = [];
         console.log('arr', arr)
@@ -286,90 +294,91 @@ const Chat = () => {
    }
 
    const renderRobotAvatar = () => {
-     // <IconFont name='jiqiren' color='#fff' size={35} />
-     return <Image round width={69} height={69} src={robotInfo?.metadata?.icon} />
+     return <Image key={robotInfo?.icon} round lazyLoad width={69} height={69} src={`${apiUrl}${robotInfo?.icon}`} />
    }
 
   return (
-    <View className='chat_wrap'>
-      <ScrollView scrollY scrollTop={scrollTop} className='chat_list'>
-        <View className='msg_content'>
-          <View>
-            <View className='msg_container msg_left'>
-              <View className='msg_avatar' onClick={onToRobotDetail}>
-                { renderRobotAvatar() }
-              </View>
-              <View className='dis-flex'>
-                <View className='msg_item'>
-                  您好，我是 { app_name || '' }
+    <ThemeContainer>
+      <View className='chat_wrap'>
+        <ScrollView scrollY scrollTop={scrollTop} className='chat_list'>
+          <View className='msg_content'>
+            <View>
+              <View className='msg_container msg_left'>
+                <View className='msg_avatar' onClick={onToRobotDetail}>
+                  { renderRobotAvatar() }
                 </View>
-                <View className='msg-block' />
+                <View className='dis-flex'>
+                  <View className='msg_item'>
+                    {T['chatSalutation']}{ displayName || robotInfo?.displayName || app_name || '-' }
+                  </View>
+                  <View className='msg-block' />
+                </View>
               </View>
             </View>
+
+            {msgList?.map((msg, i) => (
+                <View key={msg?.id || i}>
+                  {msg?.query && <View className='msg_container msg_right'>
+                    <View className='dis-flex'>
+                      <View className='msg-block' />
+                      <View className='msg_item'>
+                        {msg?.query || ''}
+                      </View>
+                    </View>
+                    <View className='msg_avatar' onClick={onToPublisherDetail}>
+                      {/*<IconFont name='yonghu' color='#fff' size={30} />*/}
+                      <Image round width={69} height={69} src={default_chat} />
+                    </View>
+                  </View>}
+
+                  {msg?.answer && <View className='msg_container msg_left'>
+                    <View className='msg_avatar' onClick={onToRobotDetail}>
+                      { renderRobotAvatar() }
+                    </View>
+                    <View className='dis-flex'>
+                      <View className='msg_item'>
+                        { formatMsgItem(msg?.answer) }
+                      </View>
+                      <View className='msg-block' />
+                    </View>
+                  </View>}
+                </View>
+              ))
+            }
+
+            {isShowWrite ? <View className='writing_wrap'>
+              <View className='msg_container msg_left'>
+                <View className='msg_avatar' onClick={onToRobotDetail}>
+                  { renderRobotAvatar() }
+                </View>
+                <View className='dis-flex'>
+                  <View className='msg_item'>
+                    { loading ? <Loading className='msg-loading' color='#8F1AFF' size={26} /> : formatMsgItem(writingMsg)}
+                  </View>
+                  <View className='msg-block' />
+                </View>
+              </View>
+            </View> : null }
           </View>
 
-          {msgList?.map((msg) => (
-              <View key={msg?.id}>
-                {msg?.query && <View className='msg_container msg_right'>
-                  <View className='dis-flex'>
-                    <View className='msg-block' />
-                    <View className='msg_item'>
-                      {msg?.query || ''}
-                    </View>
-                  </View>
-                  <View className='msg_avatar' onClick={onToPublisherDetail}>
-                    {/*<IconFont name='yonghu' color='#fff' size={30} />*/}
-                    <Image round width={69} height={69} src={default_chat} />
-                  </View>
-                </View>}
+        </ScrollView>
 
-                {msg?.answer && <View className='msg_container msg_left'>
-                  <View className='msg_avatar' onClick={onToRobotDetail}>
-                    { renderRobotAvatar() }
-                  </View>
-                  <View className='dis-flex'>
-                    <View className='msg_item'>
-                      { formatMsgItem(msg?.answer) }
-                    </View>
-                    <View className='msg-block' />
-                  </View>
-                </View>}
-              </View>
-            ))
-          }
-
-          {isShowWrite ? <View className='writing_wrap'>
-            <View className='msg_container msg_left'>
-              <View className='msg_avatar' onClick={onToRobotDetail}>
-                { renderRobotAvatar() }
-              </View>
-              <View className='dis-flex'>
-                <View className='msg_item'>
-                  { loading ? <Loading className='msg-loading' color='#8F1AFF' size={26} /> : formatMsgItem(writingMsg)}
-                </View>
-                <View className='msg-block' />
-              </View>
-            </View>
-          </View> : null }
+        <View className='chat_toolbar'>
+          <Input
+            className='chat_input'
+            placeholder={`${T['send']}${T['message']}`}
+            value={inputMsg}
+            onInput={onInputChange}
+            onConfirm={onSend}
+          />
+          <View className='chat_send' onClick={onSend}>
+            <IconFont name='fasong' color='#a060ee' size={38} />
+          </View>
         </View>
 
-      </ScrollView>
-
-      <View className='chat_toolbar'>
-        <Input
-          className='chat_input'
-          placeholder='发送消息'
-          value={inputMsg}
-          onInput={onInputChange}
-          onConfirm={onSend}
-        />
-        <View className='chat_send' onClick={onSend}>
-          <IconFont name='fasong' color='#a060ee' size={38} />
-        </View>
+        <ToastTip />
       </View>
-
-      <ToastTip />
-    </View>
+    </ThemeContainer>
   )
 }
 

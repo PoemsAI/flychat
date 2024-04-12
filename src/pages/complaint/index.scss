@@ -1,8 +1,5 @@
 
-page {
-  background-color: var(--background-gray-color);
-}
-.feedback_wrap {
+.complaint_wrap {
   min-height: 80vh;
   margin: 38rpx;
   background-color: var(--background-gray-color);
@@ -12,6 +9,6 @@ page {
     margin-left: 15rpx;
   }
   .vant-form-formItem-wrapper {
-    background: var(--background-color);
+    border-radius: 31rpx;
   }
 }

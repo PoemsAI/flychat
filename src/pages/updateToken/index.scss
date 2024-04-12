@@ -8,10 +8,13 @@ page {
   background-color: var(--background-gray-color);
   border-radius: 31rpx;
   overflow: auto;
+  .formItem {
+    margin-bottom: 30rpx;
+  }
   .vant-form-formItem-controll {
     margin-left: 15rpx;
   }
   .vant-form-formItem-wrapper {
-    background: var(--background-color);
+    border-radius: 31rpx;
   }
 }

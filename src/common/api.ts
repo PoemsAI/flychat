@@ -11,10 +11,11 @@ Taro.addInterceptor(interceptor)
 
 export default (params: Taro.request.Option<any, any>) => {
   const config: Record<string, any> = store.getState()?.config || {};
+  const token = getAuthData()?.token?.id_token || '';
   console.log('config', config)
   const host = config?.apiUrl
   const header = {
-    Authorization: `bearer ${getAuthData()?.token?.id_token}`,
+    Authorization: `bearer ${token}`,
   }
   return Taro.request({
     timeout: 30000,

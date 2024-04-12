@@ -54,8 +54,12 @@
     padding-right: 30rpx;
   }
 
-.van-button-submit {
+  .van-button-submit {
     color: var(--theme-color);
     margin-bottom: 23rpx;
+  }
+
+  .submit-wrap {
+    margin: 50rpx 0;
   }
 }

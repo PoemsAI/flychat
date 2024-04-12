@@ -3,49 +3,58 @@ import { useGlobalIconFont as globalIconFont } from './components/iconfont/helpe
 export default defineAppConfig({
   usingComponents: globalIconFont(),
   appId: 'wx7c95a9504d4dc7c5',
+  entryPagePath: 'pages/message/index',
   pages: [
     'pages/message/index',
+    'pages/intelligentRobot/index',
+    'pages/my/index',
     'pages/robotDetail/index',
     'pages/publisherDetail/index',
     'pages/chat/index',
-    'pages/intelligentRobot/index',
-    'pages/my/index',
     'pages/createRobot/index',
+    'pages/updateRobot/index',
+    'pages/complaint/index',
     'pages/setting/index',
     'pages/editUserInfo/index',
     'pages/about/index',
-    'pages/feedback/index',
     'pages/report/index',
     'pages/updateToken/index',
   ],
   window: {
-    backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#fff',
-    navigationBarTitleText: 'WeChat',
-    navigationBarTextStyle: 'black'
+    navigationBarTitleText: 'flyChat',
+    backgroundTextStyle: '@bgTxtStyle',
+    navigationBarBackgroundColor: '@navBgColor',
+    navigationBarTextStyle: '@navTxtStyle'
+  },
+  darkmode: true,
+  themeLocation: 'theme.json',
+  debug: false,
+  permission: {},
+  networkTimeout: {
+    request: 30000
   },
   tabBar: {
-    color: '#333',
-    selectedColor: '#901aff',
-    backgroundColor: '#fff',
+    color: "@tabFontColor",
+    selectedColor: "@tabSelectedColor",
+    backgroundColor: "@tabBgColor",
     list: [
       {
         pagePath: 'pages/message/index',
         text: '消息',
-        iconPath: './assets/images/message.png',
-        selectedIconPath: './assets/images/message_sel.png'
+        iconPath: "@iconPath1",
+        selectedIconPath: "@selectedIconPath1"
       },
       {
         pagePath: 'pages/intelligentRobot/index',
         text: '智能体',
-        iconPath: './assets/images/intelligent_robot.png',
-        selectedIconPath: './assets/images/intelligent_robot_sel.png'
+        iconPath: "@iconPath2",
+        selectedIconPath: "@selectedIconPath2"
       },
       {
         pagePath: 'pages/my/index',
         text: '我的',
-        iconPath: './assets/images/my.png',
-        selectedIconPath: './assets/images/my_sel.png'
+        iconPath: "@iconPath3",
+        selectedIconPath: "@selectedIconPath3"
       }
     ]
   }

@@ -1,79 +1,148 @@
 import React from 'react'
+import Taro from '@tarojs/taro';
+import {getAuthData, toQuerystring} from '@/common/utils';
+import {sdk as bff} from '@/utils';
+import {getCurrentInstance} from '@tarojs/runtime';
 import { View } from '@tarojs/components'
-import {Image, Cell} from '@antmjs/vantui'
+import {Image, Cell, Loading, Skeleton, Empty, PullToRefresh, IPullToRefreshProps} from '@antmjs/vantui'
 import {useSelector} from 'react-redux';
 import IconFont from "../../components/iconfont"
+import ThemeContainer from '../../components/theme/index'
 import './index.scss'
-import default_chat from '../../assets/images/default_chat.png'
+import default_chat from '../../images/default_chat.png'
 
-const { memo } = React;
+const { memo, useEffect, useState } = React;
 
 const PublisherDetail = () => {
 
-  const { name, phone }: any = useSelector((state: any) => {
+  const [loading, setLoading] = useState(false);
+  const [listGpts, setListGpts] = useState<any>([]);
+  const { isUpdate }: Record<string, any> = getCurrentInstance().router?.params || {};
+
+  const { name, phone, apiUrl, T }: any = useSelector((state: any) => {
     console.log(state);
-    return state.config.userInfo;
+    const config = state.config
+    return {
+      name: config.userInfo?.name,
+      phone: config.userInfo?.phone,
+      apiUrl: config.apiUrl,
+      T: config.locales?.data,
+    };
   });
 
-  const onToRobotChat = () => {
-    // Taro.navigateTo({
-    //   url: '/pages/chat/index'
-    // });
+
+  useEffect(() => {
+    onRefresh()
+  }, [isUpdate]);
+
+  Taro.useDidShow(() => {
+    console.log('componentDidShow')
+  })
+
+  const onRefresh: IPullToRefreshProps['onRefresh'] = () => {
+    return new Promise(async (resolve) => {
+      const nodes = await getListGPTs()
+      setListGpts(nodes)
+      console.log('onRefresh')
+      resolve(undefined)
+    })
+  }
+
+  const getListGPTs = async () => {
+    const authData = getAuthData();
+    setLoading(true)
+    const agentData: any = await bff.listApplications({
+      input: {
+        page: 1,
+        pageSize: -1,
+        namespace: authData?.project,
+      },
+    }).catch(error => {
+      setLoading(false)
+      console.warn('listApplications failed', error);
+    });
+    setLoading(false)
+    const nodes = agentData?.Application?.listApplicationMetadata?.nodes || [];
+    // setListGpts(nodes.filter(item => item.creator === name));
+    return nodes.filter(item => item.creator === name);
+  }
+
+  const onToRobotChat = (data) => {
+    const params = {
+      displayName: data.displayName,
+      app_name: data.name,
+      app_namespace: data.namespace,
+    }
+    Taro.navigateTo({
+      url: `/pages/chat/index?${toQuerystring(params)}`
+    });
   }
 
   return (
-    <View className='publisher_detail'>
+    <ThemeContainer>
+      <View className='publisher_detail'>
 
-      <View className='my_avatar'>
-        <Image round width={110} height={110} src={default_chat} />
+        <View className='my_avatar'>
+          <Image round width={110} height={110} src={default_chat} />
 
-        <View className='my_nick_name'>{name || '-'}</View>
-        <View className='my_id'>ID号：{phone}</View>
-      </View>
+          <View className='my_nick_name'>{name || '-'}</View>
+          <View className='my_id'>ID：{phone}</View>
+        </View>
 
-      <View className='robot_list'>
-        {
-          Array(5).fill(1).map(() => (
-            <Cell
-              clickable
-              className='robot_wrap'
-              onClick={onToRobotChat}
-              renderIcon={
-                <Image
-                  className='list_img'
-                  round
-                  width={110}
-                  height={110}
-                  src='https://img.yzcdn.cn/vant/cat.jpeg'
-                />
-              }
-              renderTitle={
-                <View className='list_content'>
-                  <View className='list-title'>
-                    AI 图片生成
-                  </View>
-                  <View className='list-desc'>
-                    巨大的武装机甲，极简设计，背景荒废，真是透视，真实光影，高饱和度，高
-                  </View>
-                  <View className='list_info'>
-                    <View className='list-article-hot-info'>
-                      <IconFont name='ef-redian-gongju' color='#959595' size={35} />
-                      1.2万
+        <View className='robot_list'>
+          <PullToRefresh onRefresh={onRefresh} touchMinTime={0}>
+            {
+              listGpts.length ? listGpts.map((item) => (
+                <Cell
+                  key={item.id}
+                  clickable
+                  className='robot_wrap'
+                  onClick={() => onToRobotChat(item)}
+                  renderIcon={
+                    <Image
+                      className='list_img'
+                      key={item?.icon}
+                      round
+                      lazyLoad
+                      width={110}
+                      height={110}
+                      src={`${apiUrl}${item?.icon}` || default_chat}
+                    />
+                  }
+                  renderTitle={
+                    <View className='list_content'>
+                      <View className='list-title'>
+                        { item.displayName || '' }
+                      </View>
+                      <View className='list-desc'>
+                        { item.description || '' }
+                      </View>
+                      <View className='list_info'>
+                        <View className='list-article-hot-info'>
+                          <IconFont name='ef-redian-gongju' color='#959595' size={35} />
+                          {item?.hot || 0}w
+                        </View>
+                        <View className='list-article-info'>
+                          @{item?.creator || ''}
+                        </View>
+                      </View>
                     </View>
-                    <View className='list-article-info'>
-                      @智慧女孩不秃头
-                    </View>
-                  </View>
-                </View>
-              }
-            >
-            </Cell>
-          ))
-        }
+                  }
+                >
+                </Cell>
+              )) : (loading ?
+                <View className='loading'>
+                  <Loading size={24}>{T['loading']}...</Loading>
+                  <Skeleton title avatar row='2' loading={loading} />
+                </View> :
+                <Empty description={T['noData']} />)
+            }
+          </PullToRefresh>
+
+        </View>
 
       </View>
-
-    </View>
+    </ThemeContainer>
   )
 }
 

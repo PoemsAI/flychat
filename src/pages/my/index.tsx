@@ -1,20 +1,118 @@
 import React from 'react'
 import Taro from '@tarojs/taro'
-import {Button, Image, Tabs, Tab, Cell, Icon} from '@antmjs/vantui'
+import {
+  Button,
+  Image,
+  Tabs,
+  Tab,
+  SwipeCell,
+  Cell,
+  Icon,
+  Loading,
+  Skeleton,
+  Empty,
+  Row,
+  Col,
+  PullToRefresh,
+  IPullToRefreshProps
+} from '@antmjs/vantui'
 import { View } from '@tarojs/components'
 import { useSelector } from 'react-redux';
+import {getCurrentInstance} from '@tarojs/runtime';
+import { getAuthData, toQuerystring } from '../../common/utils';
+import {sdk as bff} from '../../utils';
 import './index.scss'
 import IconFont from '../../components/iconfont';
-import default_chat from '../../assets/images/default_chat.png'
+import ThemeContainer from '../../components/theme/index'
+import default_chat from '../../images/default_chat.png'
 
-const { memo } = React;
+
+const { memo, useEffect, useState } = React;
 
 const My = () => {
+  const [loading, setLoading] = useState(false);
+  const [listGpts, setListGpts] = useState<any>([]);
+  const { isUpdate }: Record<string, any> = getCurrentInstance().router?.params || {};
 
-  const { name }: any = useSelector((state: any) => {
-    console.log(state);
-    return state.config.userInfo;
+  const { name, apiUrl, T }: any = useSelector((state: any) => {
+    const config = state.config
+    return {
+      name: config.userInfo?.name,
+      apiUrl: config.apiUrl,
+      T: config.locales?.data,
+    };
   });
+
+  console.log(T)
+
+  useEffect(() => {
+    onRefresh()
+  }, [isUpdate]);
+
+  Taro.useDidShow(() => {
+    console.log('componentDidShow')
+  })
+
+  const onRefresh: IPullToRefreshProps['onRefresh'] = () => {
+    return new Promise(async (resolve) => {
+      const nodes = await getListGPTs()
+      setListGpts(nodes)
+      console.log('onRefresh')
+      resolve(undefined)
+    })
+  }
+
+  const getListGPTs = async () => {
+    const authData = getAuthData();
+    setLoading(true)
+    const agentData: any = await bff.listApplications({
+      input: {
+        page: 1,
+        pageSize: -1,
+        namespace: authData?.project,
+      },
+    }).catch(error => {
+      setLoading(false)
+      console.warn('listApplications failed', error);
+    });
+    setLoading(false)
+    const nodes = agentData?.Application?.listApplicationMetadata?.nodes || [];
+    // setListGpts(nodes.filter(item => item.creator === name));
+    return nodes.filter(item => item.creator === name)
+  }
+
+  const onDeleteRobot = async (item) => {
+    if (!item.name) {
+      return
+    }
+    const authData = getAuthData();
+    const result: any = await bff.deleteApplication({
+      input: {
+        name: item.name,
+        namespace: authData?.project,
+      },
+    }).catch(error => {
+      console.warn('listApplications failed', error);
+    });
+    const application = result?.Application?.deleteApplication;
+    if (application === 'ok') {
+      Taro.showToast({
+        title: '智能体删除成功',
+        duration: 1000
+      });
+      setListGpts(listGpts.filter(gpt => gpt.name !== item.name))
+    }
+  }
+
+  const onUpdateRobot = (data) => {
+    const params = {
+      app_name: data.name,
+      app_namespace: data.namespace,
+    }
+    Taro.navigateTo({
+      url: `/pages/updateRobot/index?${toQuerystring(params)}`,
+    });
+  }
 
   const onCreateRobot = () => {
     Taro.navigateTo({
@@ -34,82 +132,133 @@ const My = () => {
     });
   }
 
-  const onToRobotChat = () => {
-    // Taro.navigateTo({
-    //   url: '/pages/chat/index'
-    // });
+  const onToRobotChat = (data) => {
+    const params = {
+      displayName: data.displayName,
+      app_name: data.name,
+      app_namespace: data.namespace,
+    }
+    Taro.navigateTo({
+      url: `/pages/chat/index?${toQuerystring(params)}`
+    });
   }
 
   return (
-    <View className='my_page'>
+    <ThemeContainer isTabBar>
+      <View className='my_page'>
 
-      <View className='my_avatar'>
-        <Image round width={110} height={110} src={default_chat} />
+        <View className='my_avatar'>
+          <Image round width={110} height={110} src={default_chat} />
 
-        <View className='at-article__h3 my_nick_name'>{ name || '-' }</View>
+          <View className='at-article__h3 my_nick_name'>{ name || '-' }</View>
 
-        <Button className='editInfo' type='primary' onClick={onEditUserInfo}>编辑个人资料</Button>
+          <Button className='editInfo' type='primary' onClick={onEditUserInfo}>{ T['editPersonalData'] }</Button>
 
-        <Button icon='setting-o' className='setting' onClick={onToSetting} />
+          <Button icon='setting-o' className='setting' onClick={onToSetting} />
+        </View>
+
+        <Tabs animated titleActiveColor='#901aff'>
+          <Tab title={T['robot']}>
+            <View className='robot_list'>
+              <PullToRefresh onRefresh={onRefresh} touchMinTime={0}>
+                {
+                  listGpts.length ? listGpts.map((item) => (
+                    <SwipeCell
+                      key={item?.id}
+                      rightWidth={140}
+                      renderRight={
+                        <Row gutter={0} className='h100'>
+                          <Col span={12} className='h100'>
+                            <Button
+                              square
+                              block
+                              size='large'
+                              className='swipe-cell-btn'
+                              color='#8F1AFF'
+                              onClick={() => onUpdateRobot(item)}
+                            >
+                              {/*<IconFont name='bianji' color='#fff' size={55} />*/}
+                              { T['edit'] }
+                            </Button>
+                          </Col>
+                          <Col span={12} className='h100'>
+                            <Button
+                              square
+                              block
+                              size='large'
+                              className='swipe-cell-btn'
+                              color='#E81F1F'
+                              onClick={() => onDeleteRobot(item)}
+                            >
+                              {/*<IconFont name='shanchu' color='#fff' size={50} />*/}
+                              { T['delete'] }
+                            </Button>
+                          </Col>
+                        </Row>
+                      }
+                    >
+                      <Cell
+                        clickable
+                        className='robot_wrap'
+                        onClick={() => onToRobotChat(item)}
+                        renderIcon={
+                          <Image
+                            className='list_img'
+                            round
+                            lazyLoad
+                            width={110}
+                            height={110}
+                            src={`${apiUrl}${item?.icon}` || default_chat}
+                          />
+                        }
+                        renderTitle={
+                          <View className='list_content'>
+                            <View className='list-title'>
+                              { item.displayName || '' }
+                            </View>
+                            <View className='list-desc'>
+                              { item.description || '' }
+                            </View>
+                            <View className='list_info'>
+                              <View className='list-article-hot-info'>
+                                <IconFont name='ef-redian-gongju' color='#959595' size={35} />
+                                {item?.hot || 0}w
+                              </View>
+                              <View className='list-article-info'>
+                                @{item?.creator || ''}
+                              </View>
+                            </View>
+                          </View>
+                        }
+                      >
+                      </Cell>
+                    </SwipeCell>
+                  )) : (loading ?
+                    <View className='loading'>
+                      <Loading size={24}>{T['loading']}...</Loading>
+                      <Skeleton title avatar row='2' loading={loading} />
+                    </View> :
+                    <Empty description={T['noData']} />)
+                }
+              </PullToRefresh>
+
+              <Button round className='add-btn' onClick={onCreateRobot}>
+                <Icon name='plus' size={50} />
+              </Button>
+            </View>
+          </Tab>
+          <Tab title={T['laboratory']}>
+            <View className='laboratory_desc'>
+              <View>{T['upgradeToAi']}</View>
+              <View>{T['earlyAccess']}</View>
+              <Button className='subscribe' round size='small' type='primary'>
+                {T['subscribe']}
+              </Button>
+            </View>
+          </Tab>
+        </Tabs>
       </View>
-
-      <Tabs animated swipeable titleActiveColor='#901aff'>
-        <Tab title='智能体'>
-          <View className='robot_list'>
-            {
-              Array(20).fill(1).map(() => (
-                <Cell
-                  clickable
-                  className='robot_wrap'
-                  onClick={onToRobotChat}
-                  renderIcon={
-                    <Image
-                      className='list_img'
-                      round
-                      width={110}
-                      height={110}
-                      src='https://img.yzcdn.cn/vant/cat.jpeg'
-                    />
-                  }
-                  renderTitle={
-                    <View className='list_content'>
-                      <View className='list-title'>
-                        AI 图片生成
-                      </View>
-                      <View className='list-desc'>
-                        巨大的武装机甲，极简设计，背景荒废，真是透视，真实光影，高饱和度，高
-                      </View>
-                      <View className='list_info'>
-                        <View className='list-article-hot-info'>
-                          <IconFont name='ef-redian-gongju' color='#959595' size={35} />
-                          1.2万
-                        </View>
-                        <View className='list-article-info'>
-                          @智慧女孩不秃头
-                        </View>
-                      </View>
-                    </View>
-                  }
-                >
-                </Cell>
-              ))
-            }
-
-            <Button round className='add-btn' onClick={onCreateRobot}>
-              <Icon name='plus' size={50} />
-            </Button>
-          </View>
-        </Tab>
-        <Tab title='实验室'>
-          <View className='laboratory_desc'>
-            立即升级到AI+，抢先体验我们的实验性功能！
-            <Button className='subscribe' round size='small' type='primary'>
-              订阅
-            </Button>
-          </View>
-        </Tab>
-      </Tabs>
-    </View>
+    </ThemeContainer>
   )
 }
 

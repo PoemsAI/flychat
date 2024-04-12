@@ -1,10 +1,17 @@
 @import "../../app";
-
+page {
+  ::-webkit-scrollbar {
+    display: none;  /* 隐藏滚动条 */
+  }
+}
 .intelligentRobot {
   height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: var(--background-color);
+  .van-search__content {
+    border-radius: 31rpx;
+  }
   .tag-wrap {
     overflow: auto;
     margin: 0 20px;
@@ -32,6 +39,10 @@
   .robot_list {
     flex: 1;
     overflow: auto;
+    .loading {
+      text-align: center;
+      margin-top: 15rpx;
+    }
     .robot_wrap {
       .list_img {
         width: 112px;

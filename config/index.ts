@@ -17,7 +17,7 @@ export default defineConfig(async (merge, { command, mode }) => {
     },
     sourceRoot: 'src',
     outputRoot: 'dist',
-    plugins: [],
+    plugins: ['taro-plugin-compiler-optimization'],
     alias: {
       '@': 'src',
     },
@@ -25,6 +25,7 @@ export default defineConfig(async (merge, { command, mode }) => {
     },
     copy: {
       patterns: [
+        { from: 'src/images/', to: 'dist/images/' }
       ],
       options: {
       }
@@ -33,13 +34,16 @@ export default defineConfig(async (merge, { command, mode }) => {
     compiler: {
       type: 'webpack5',
       prebundle: {
-        exclude: ['taro-ui']
+        enable: true,
       }
     },
     cache: {
-      enable: false // Webpack 持久化缓存配置，建议开启。默认配置请参考：https://docs.taro.zone/docs/config-detail#cache
+      enable: true // Webpack 持久化缓存配置，建议开启。默认配置请参考：https://docs.taro.zone/docs/config-detail#cache
     },
     mini: {
+      optimizeMainPackage: {
+        enable: true,  // 智能提取分包依赖
+      },
       miniCssExtractPluginOption: {
         ignoreOrder: true // 忽略组件内的css排序问题
       },
@@ -91,6 +95,21 @@ export default defineConfig(async (merge, { command, mode }) => {
           config: {
             namingPattern: 'module', // 转换模式，取值为 global/module
             generateScopedName: '[name]__[local]___[hash:base64:5]'
+          }
+        },
+        pxtransform: {
+          enable: true,
+          config: {
+            onePxTransform: true,
+            unitPrecision: 5,
+            propList: ['*'],
+            selectorBlackList: [],
+            replace: true,
+            mediaQuery: false,
+            minPixelValue: 0,
+            baseFontSize: 20,
+            maxRootSize: 40,
+            minRootSize: 20
           }
         }
       },
